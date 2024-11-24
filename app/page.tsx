@@ -1,6 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { subscribeUser, unsubscribeUser, sendNotification } from "./actions";
+import {
+  subscribeUser,
+  unsubscribeUser,
+  sendNotification,
+  WebPushSubscription,
+} from "./actions";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -49,7 +54,15 @@ function PushNotificationManager() {
       ),
     });
     setSubscription(sub);
-    await subscribeUser(sub);
+    const webPushSubscription: WebPushSubscription = {
+      endpoint: sub.endpoint,
+      expirationTime: sub.expirationTime,
+      keys: {
+        p256dh: sub.toJSON().keys?.p256dh || "",
+        auth: sub.toJSON().keys?.auth || "",
+      },
+    };
+    await subscribeUser(webPushSubscription);
   }
 
   async function unsubscribeFromPush() {
